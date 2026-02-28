@@ -7,6 +7,8 @@ import {
   CREATE_CATEGORY_FAILURE,
   DELETE_CATEGORY_SUCCESS,
   DELETE_CATEGORY_FAILURE,
+  RESTORE_CATEGORY_SUCCESS,
+  RESTORE_CATEGORY_FAILURE,
 } from "../types";
 
 export const fetchCategories = () => async (dispatch) => {
@@ -40,6 +42,18 @@ export const deleteCategory = (id) => async (dispatch) => {
   } catch (error) {
     const message = error.response?.data?.message || "Failed to delete category.";
     dispatch({ type: DELETE_CATEGORY_FAILURE, payload: message });
+    throw error;
+  }
+};
+
+export const restoreCategory = (id) => async (dispatch) => {
+  try {
+    const { data } = await api.patch(`/categories/restore/${id}`);
+    dispatch({ type: RESTORE_CATEGORY_SUCCESS, payload: data.data });
+    return data;
+  } catch (error) {
+    const message = error.response?.data?.message || "Failed to restore category.";
+    dispatch({ type: RESTORE_CATEGORY_FAILURE, payload: message });
     throw error;
   }
 };

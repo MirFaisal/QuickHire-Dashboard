@@ -7,6 +7,8 @@ import {
   CREATE_JOB_FAILURE,
   DELETE_JOB_SUCCESS,
   DELETE_JOB_FAILURE,
+  RESTORE_JOB_SUCCESS,
+  RESTORE_JOB_FAILURE,
 } from "../types";
 
 export const fetchJobs = () => async (dispatch) => {
@@ -42,6 +44,18 @@ export const deleteJob = (id) => async (dispatch) => {
   } catch (error) {
     const message = error.response?.data?.message || "Failed to delete job.";
     dispatch({ type: DELETE_JOB_FAILURE, payload: message });
+    throw error;
+  }
+};
+
+export const restoreJob = (id) => async (dispatch) => {
+  try {
+    const { data } = await api.patch(`/jobs/restore/${id}`);
+    dispatch({ type: RESTORE_JOB_SUCCESS, payload: data.data });
+    return data;
+  } catch (error) {
+    const message = error.response?.data?.message || "Failed to restore job.";
+    dispatch({ type: RESTORE_JOB_FAILURE, payload: message });
     throw error;
   }
 };

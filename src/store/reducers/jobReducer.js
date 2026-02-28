@@ -4,6 +4,7 @@ import {
   FETCH_JOBS_FAILURE,
   CREATE_JOB_SUCCESS,
   DELETE_JOB_SUCCESS,
+  RESTORE_JOB_SUCCESS,
 } from "../types";
 
 const initialState = {
@@ -30,6 +31,12 @@ const jobReducer = (state = initialState, action) => {
       return {
         ...state,
         jobs: state.jobs.filter((job) => job._id !== action.payload),
+      };
+
+    case RESTORE_JOB_SUCCESS:
+      return {
+        ...state,
+        jobs: [action.payload, ...state.jobs],
       };
 
     default:

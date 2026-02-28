@@ -1,4 +1,10 @@
-import { FETCH_APPLICATIONS_REQUEST, FETCH_APPLICATIONS_SUCCESS, FETCH_APPLICATIONS_FAILURE } from "../types";
+import {
+  FETCH_APPLICATIONS_REQUEST,
+  FETCH_APPLICATIONS_SUCCESS,
+  FETCH_APPLICATIONS_FAILURE,
+  DELETE_APPLICATION_SUCCESS,
+  RESTORE_APPLICATION_SUCCESS,
+} from "../types";
 
 const initialState = {
   applications: [],
@@ -16,6 +22,18 @@ const applicationReducer = (state = initialState, action) => {
 
     case FETCH_APPLICATIONS_FAILURE:
       return { ...state, loading: false, error: action.payload };
+
+    case DELETE_APPLICATION_SUCCESS:
+      return {
+        ...state,
+        applications: state.applications.filter((app) => app._id !== action.payload),
+      };
+
+    case RESTORE_APPLICATION_SUCCESS:
+      return {
+        ...state,
+        applications: [action.payload, ...state.applications],
+      };
 
     default:
       return state;

@@ -4,6 +4,7 @@ import {
   FETCH_CATEGORIES_FAILURE,
   CREATE_CATEGORY_SUCCESS,
   DELETE_CATEGORY_SUCCESS,
+  RESTORE_CATEGORY_SUCCESS,
 } from "../types";
 
 const initialState = {
@@ -30,6 +31,12 @@ const categoryReducer = (state = initialState, action) => {
       return {
         ...state,
         categories: state.categories.filter((cat) => cat._id !== action.payload),
+      };
+
+    case RESTORE_CATEGORY_SUCCESS:
+      return {
+        ...state,
+        categories: [...state.categories, action.payload].sort((a, b) => a.name.localeCompare(b.name)),
       };
 
     default:
