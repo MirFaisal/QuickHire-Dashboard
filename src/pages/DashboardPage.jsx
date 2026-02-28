@@ -1,58 +1,62 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { Card, Row, Col, Typography, Table, Tag, Spin } from "antd";
 import {
-  Table,
-  Tag,
-  Typography,
-  Button,
-  Popconfirm,
-  Modal,
-  Form,
-  Input,
-  message,
-  Space,
-} from "antd";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import { fetchJobs, createJob, deleteJob } from "../store/actions/jobActions";
+  FileTextOutlined,
+  TeamOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
+import { fetchJobs } from "../store/actions/jobActions";
+import { fetchCategories } from "../store/actions/categoryActions";
+import { fetchApplications } from "../store/actions/applicationActions";
 
-const { Title } = Typography;
-const { TextArea } = Input;
+const { Title, Text } = Typography;
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
-  const { jobs, loading } = useSelector((state) => state.jobs);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const { jobs, loading: jobsLoading } = useSelector((state) => state.jobs);
+  const { categories, loading: catsLoading } = useSelector(
+    (state) => state.categories,
+  );
+  const { applications, loading: appsLoading } = useSelector(
+    (state) => state.applications,
+  );
 
   useEffect(() => {
     dispatch(fetchJobs());
+    dispatch(fetchCategories());
+    dispatch(fetchApplications());
   }, [dispatch]);
 
-  const handleCreateJob = async (values) => {
-    setConfirmLoading(true);
-    try {
-      await dispatch(createJob(values));
-      message.success("Job created successfully");
-      form.resetFields();
-      setIsModalOpen(false);
-    } catch {
-      message.error("Failed to create job");
-    } finally {
-      setConfirmLoading(false);
-    }
-  };
+  const isLoading = jobsLoading || catsLoading || appsLoading;
 
-  const handleDeleteJob = async (id) => {
-    try {
-      await dispatch(deleteJob(id));
-      message.success("Job deleted successfully");
-    } catch {
-      message.error("Failed to delete job");
-    }
-  };
+  const stats = [
+    {
+      title: "Total Jobs",
+      count: jobs.length,
+      icon: <FileTextOutlined className="text-3xl text-blue-500" />,
+      color: "bg-blue-50 border-blue-200",
+      link: "/jobs",
+    },
+    {
+      title: "Applications",
+      count: applications.length,
+      icon: <TeamOutlined className="text-3xl text-green-500" />,
+      color: "bg-green-50 border-green-200",
+      link: "/applications",
+    },
+    {
+      title: "Categories",
+      count: categories.length,
+      icon: <AppstoreOutlined className="text-3xl text-purple-500" />,
+      color: "bg-purple-50 border-purple-200",
+      link: "/categories",
+    },
+  ];
 
-  const columns = [
+  const recentJobColumns = [
     {
       title: "Title",
       dataIndex: "title",
@@ -68,129 +72,108 @@ const DashboardPage = () => {
       title: "Category",
       dataIndex: "category",
       key: "category",
-      render: (category) => <Tag color="blue">{category}</Tag>,
-    },
-    {
-      title: "Location",
-      dataIndex: "location",
-      key: "location",
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      width: 120,
-      render: (_, record) => (
-        <Popconfirm
-          title="Delete this job?"
-          description="This action cannot be undone."
-          onConfirm={() => handleDeleteJob(record._id)}
-          okText="Delete"
-          okType="danger"
-          cancelText="Cancel"
-        >
-          <Button type="text" danger icon={<DeleteOutlined />}>
-            Delete
-          </Button>
-        </Popconfirm>
+      render: (category) => (
+        <Tag color="blue">{category?.name || "Uncategorized"}</Tag>
       ),
+    },
+    {
+      title: "Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date) => new Date(date).toLocaleDateString(),
     },
   ];
 
+  const recentAppColumns = [
+    {
+      title: "Applicant",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      ellipsis: true,
+    },
+    {
+      title: "Job",
+      dataIndex: "job_id",
+      key: "job_id",
+      render: (job) => job?.title || "—",
+    },
+    {
+      title: "Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date) => new Date(date).toLocaleDateString(),
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <Title level={4} className="!mb-0">
-          Job Listings
-        </Title>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setIsModalOpen(true)}
-        >
-          Create Job
-        </Button>
-      </div>
+      <Title level={4} className="!mb-6">
+        Dashboard Overview
+      </Title>
 
-      <Table
-        columns={columns}
-        dataSource={jobs}
-        rowKey="_id"
-        loading={loading}
-        pagination={{ pageSize: 10 }}
-      />
+      <Row gutter={[16, 16]} className="mb-8">
+        {stats.map((stat) => (
+          <Col xs={24} sm={8} key={stat.title}>
+            <Card
+              hoverable
+              className={`border ${stat.color} cursor-pointer`}
+              onClick={() => navigate(stat.link)}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <Text type="secondary" className="text-sm">
+                    {stat.title}
+                  </Text>
+                  <Title level={2} className="!mb-0 !mt-1">
+                    {stat.count}
+                  </Title>
+                </div>
+                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-white shadow-sm">
+                  {stat.icon}
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
 
-      <Modal
-        title="Create New Job"
-        open={isModalOpen}
-        onCancel={() => {
-          setIsModalOpen(false);
-          form.resetFields();
-        }}
-        footer={null}
-        destroyOnClose
-      >
-        <Form form={form} layout="vertical" onFinish={handleCreateJob}>
-          <Form.Item
-            name="title"
-            label="Job Title"
-            rules={[{ required: true, message: "Please enter job title" }]}
-          >
-            <Input placeholder="e.g. Backend Developer" />
-          </Form.Item>
-
-          <Form.Item
-            name="company"
-            label="Company"
-            rules={[{ required: true, message: "Please enter company name" }]}
-          >
-            <Input placeholder="e.g. QuickHire Inc." />
-          </Form.Item>
-
-          <Form.Item
-            name="location"
-            label="Location"
-            rules={[{ required: true, message: "Please enter location" }]}
-          >
-            <Input placeholder="e.g. Remote" />
-          </Form.Item>
-
-          <Form.Item
-            name="category"
-            label="Category"
-            rules={[{ required: true, message: "Please enter category" }]}
-          >
-            <Input placeholder="e.g. Engineering" />
-          </Form.Item>
-
-          <Form.Item
-            name="description"
-            label="Description"
-            rules={[{ required: true, message: "Please enter description" }]}
-          >
-            <TextArea rows={4} placeholder="Job description..." />
-          </Form.Item>
-
-          <Form.Item>
-            <Space>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={confirmLoading}
-              >
-                Create
-              </Button>
-              <Button
-                onClick={() => {
-                  setIsModalOpen(false);
-                  form.resetFields();
-                }}
-              >
-                Cancel
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} lg={12}>
+          <Card title="Recent Jobs" className="shadow-sm">
+            <Table
+              columns={recentJobColumns}
+              dataSource={jobs.slice(0, 5)}
+              rowKey="_id"
+              pagination={false}
+              size="small"
+            />
+          </Card>
+        </Col>
+        <Col xs={24} lg={12}>
+          <Card title="Recent Applications" className="shadow-sm">
+            <Table
+              columns={recentAppColumns}
+              dataSource={applications.slice(0, 5)}
+              rowKey="_id"
+              pagination={false}
+              size="small"
+            />
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };

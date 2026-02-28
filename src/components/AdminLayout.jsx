@@ -4,6 +4,8 @@ import { Layout, Menu, Button, Typography } from "antd";
 import {
   DashboardOutlined,
   FileTextOutlined,
+  AppstoreOutlined,
+  TeamOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -30,6 +32,16 @@ const AdminLayout = () => {
       key: "/jobs",
       icon: <FileTextOutlined />,
       label: "Jobs",
+    },
+    {
+      key: "/categories",
+      icon: <AppstoreOutlined />,
+      label: "Categories",
+    },
+    {
+      key: "/applications",
+      icon: <TeamOutlined />,
+      label: "Applications",
     },
   ];
 
