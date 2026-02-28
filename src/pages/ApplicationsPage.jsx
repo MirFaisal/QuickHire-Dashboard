@@ -7,9 +7,11 @@ import {
   Button,
   Popconfirm,
   Tabs,
+  Modal,
+  Descriptions,
   message,
 } from "antd";
-import { DeleteOutlined, UndoOutlined } from "@ant-design/icons";
+import { DeleteOutlined, UndoOutlined, EyeOutlined } from "@ant-design/icons";
 import {
   fetchApplications,
   deleteApplication,
@@ -24,6 +26,13 @@ const ApplicationsPage = () => {
   const [deletedApps, setDeletedApps] = useState([]);
   const [deletedLoading, setDeletedLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const showDetail = (record) => {
+    setSelectedApp(record);
+    setModalOpen(true);
+  };
 
   useEffect(() => {
     dispatch(fetchApplications());
@@ -109,6 +118,18 @@ const ApplicationsPage = () => {
       ellipsis: true,
       render: (note) => note || "—",
     },
+    {
+      title: "View",
+      key: "view",
+      width: 80,
+      render: (_, record) => (
+        <Button
+          type="text"
+          icon={<EyeOutlined />}
+          onClick={() => showDetail(record)}
+        />
+      ),
+    },
   ];
 
   const activeColumns = [
@@ -175,6 +196,54 @@ const ApplicationsPage = () => {
           Applications
         </Title>
       </div>
+
+      <Modal
+        title="Application Details"
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        footer={null}
+        width={600}
+      >
+        {selectedApp && (
+          <Descriptions column={1} bordered size="small" className="mt-4">
+            <Descriptions.Item label="Applicant">
+              {selectedApp.name}
+            </Descriptions.Item>
+            <Descriptions.Item label="Email">
+              <a href={`mailto:${selectedApp.email}`}>{selectedApp.email}</a>
+            </Descriptions.Item>
+            <Descriptions.Item label="Job">
+              {selectedApp.job_id?.title ? (
+                <Tag color="blue">{selectedApp.job_id.title}</Tag>
+              ) : (
+                "—"
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="Resume">
+              <a
+                href={selectedApp.resume_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline"
+              >
+                {selectedApp.resume_link}
+              </a>
+            </Descriptions.Item>
+            <Descriptions.Item label="Cover Note">
+              <div className="whitespace-pre-wrap">
+                {selectedApp.cover_note || "—"}
+              </div>
+            </Descriptions.Item>
+            <Descriptions.Item label="Applied On">
+              {new Date(selectedApp.createdAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
 
       <Tabs
         activeKey={activeTab}
