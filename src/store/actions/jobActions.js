@@ -23,8 +23,10 @@ export const fetchJobs = () => async (dispatch) => {
 
 export const createJob = (jobData) => async (dispatch) => {
   try {
-    const { data } = await api.post("/jobs", jobData);
-    dispatch({ type: CREATE_JOB_SUCCESS, payload: data.data });
+    await api.post("/jobs", jobData);
+    // refetch all jobs so category is fully populated
+    const { data } = await api.get("/jobs");
+    dispatch({ type: FETCH_JOBS_SUCCESS, payload: data.data });
     return data;
   } catch (error) {
     const message = error.response?.data?.message || "Failed to create job.";
