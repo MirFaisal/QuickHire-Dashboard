@@ -120,6 +120,18 @@ const LoginPage = () => {
             </Button>
           </Form.Item>
         </Form>
+
+        <p className="text-center text-gray-400 text-sm mt-2">
+          Need credentials?{" "}
+          <a
+            href="https://github.com/MirFaisal/QuickHire-Dashboard/blob/master/README.md#default-admin-credentials"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline"
+          >
+            View documentation
+          </a>
+        </p>
       </div>
     </div>
   );
