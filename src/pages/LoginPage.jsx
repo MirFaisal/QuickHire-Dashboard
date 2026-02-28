@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Alert } from "antd";
@@ -8,18 +8,40 @@ import { login } from "../store/actions/authActions";
 const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((state) => state.auth);
-  const [localError, setLocalError] = useState(null);
+  const { loading } = useSelector((state) => state.auth);
+  const [error, setError] = useState(null);
+  const [form] = Form.useForm();
 
-  const onFinish = async (values) => {
-    setLocalError(null);
+  useEffect(() => {
+    setError(null);
+  }, []);
+
+  const onValuesChange = () => {
+    setError(null);
+    form.setFields([
+      { name: "email", errors: [] },
+      { name: "password", errors: [] },
+    ]);
+  };
+
+  const handleSubmit = async () => {
     try {
-      await dispatch(login(values));
-      navigate("/", { replace: true });
-    } catch (err) {
-      setLocalError(
-        err.response?.data?.message || "Login failed. Please try again."
-      );
+      const values = await form.validateFields();
+      setError(null);
+      try {
+        await dispatch(login(values));
+        navigate("/", { replace: true });
+      } catch (err) {
+        const msg =
+          err.response?.data?.message || "Invalid email or password. Please try again.";
+        setError(msg);
+        form.setFields([
+          { name: "email", errors: [""] },
+          { name: "password", errors: [""] },
+        ]);
+      }
+    } catch {
+      // Ant Design validation errors — already shown inline by the form
     }
   };
 
@@ -33,16 +55,30 @@ const LoginPage = () => {
           Sign in to manage your dashboard
         </p>
 
-        {(error || localError) && (
+        {error && (
           <Alert
-            message={error || localError}
+            message="Login Failed"
+            description={error}
             type="error"
             showIcon
+            closable
+            onClose={() => {
+              setError(null);
+              form.setFields([
+                { name: "email", errors: [] },
+                { name: "password", errors: [] },
+              ]);
+            }}
             className="mb-4"
           />
         )}
 
-        <Form name="login" onFinish={onFinish} layout="vertical">
+        <Form
+          form={form}
+          name="login"
+          onValuesChange={onValuesChange}
+          layout="vertical"
+        >
           <Form.Item
             name="email"
             label="Email"
@@ -73,7 +109,8 @@ const LoginPage = () => {
           <Form.Item>
             <Button
               type="primary"
-              htmlType="submit"
+              htmlType="button"
+              onClick={handleSubmit}
               loading={loading}
               block
               size="large"
@@ -89,3 +126,5 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
+
