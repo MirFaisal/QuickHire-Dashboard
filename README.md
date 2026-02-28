@@ -1,6 +1,7 @@
 # QuickHire Admin Dashboard
 
-Admin dashboard for the **QuickHire** job board application. Built with React, Ant Design, Tailwind CSS, and traditional Redux for state management.
+Admin dashboard for the **QuickHire** job board application. Built with React, Ant Design, Tailwind CSS, and
+traditional Redux for state management.
 
 ## Tech Stack
 
@@ -76,9 +77,9 @@ npm run preview
 
 Create a `.env` file in the project root:
 
-| Variable       | Description                    | Example                         |
-| -------------- | ------------------------------ | ------------------------------- |
-| `VITE_API_URL` | Backend API base URL           | `http://localhost:5000/api`     |
+| Variable       | Description          | Example                     |
+| -------------- | -------------------- | --------------------------- |
+| `VITE_API_URL` | Backend API base URL | `http://localhost:5000/api` |
 
 ## Features
 

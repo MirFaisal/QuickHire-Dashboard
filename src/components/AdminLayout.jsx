@@ -43,7 +43,7 @@ const AdminLayout = () => {
   };
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className="!min-h-screen">
       <Sider
         trigger={null}
         collapsible
